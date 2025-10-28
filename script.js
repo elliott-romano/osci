@@ -47,10 +47,17 @@ function initDefaultText() {
 			video.autoplay = true;
 			video.loop = true;
 			video.muted = true; // Will be updated by updateVideoSound
+			video.setAttribute('playsinline', '');
 			video.dataset.index = index;
 			index++;
 			video.src = `videos/${char.toLowerCase()}.mp4`;
 			content.insertBefore(video, cursor);
+			
+			// Play video and update sound state
+			video.play().catch(e => {
+				// Handle play promise rejection
+				console.error('Video play failed:', e);
+			});
 			
 			video.addEventListener('loadeddata', () => {
 				updateVideoSound();
@@ -66,11 +73,18 @@ document.addEventListener('keydown', (e) => {
 		video.autoplay = true;
 		video.loop = true;
 		video.muted = true; // Will be updated by updateVideoSound
+		video.setAttribute('playsinline', '');
 		video.dataset.index = index;
 		index++;
 		video.src = `videos/${e.key.toLowerCase()}.mp4`;
 		content.insertBefore(video, cursor);
 		content.scrollTop = content.scrollHeight;
+		
+		// Play video and update sound state
+		video.play().catch(e => {
+			// Handle play promise rejection
+			console.error('Video play failed:', e);
+		});
 		
 		video.addEventListener('loadeddata', () => {
 			updateVideoSound();
@@ -158,6 +172,16 @@ sizeSlider.addEventListener('input', (e) => {
 // Clear text
 function empty() {
 	index = 0;
+	const videos = content.querySelectorAll('video');
+	
+	// Stop all videos before removing
+	for (let video of videos) {
+		video.pause();
+		video.src = '';
+		video.load();
+	}
+	
+	// Remove all elements with data-index
 	for (let letter of content.querySelectorAll('[data-index]')) {
 		letter.remove();
 	}
